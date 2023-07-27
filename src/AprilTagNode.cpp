@@ -6,6 +6,7 @@
 #else
 #include <cv_bridge/cv_bridge.h>
 #endif
+#include "opencv2/opencv.hpp"
 #include <image_transport/camera_subscriber.hpp>
 #include <image_transport/image_transport.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -197,8 +198,9 @@ void AprilTagNode::onCamera(const sensor_msgs::msg::Image::ConstSharedPtr& msg_i
     const Mat3 Pinv = Eigen::Map<const Eigen::Matrix<double, 3, 4, Eigen::RowMajor>>(msg_ci->p.data()).leftCols<3>().inverse();
 
     // convert to 8bit monochrome image
-    const cv::Mat img_uint8 = cv_bridge::toCvShare(msg_img, "mono8")->image;
-
+    const cv::Mat img_rgb8 = cv_bridge::toCvShare(msg_img, "rgb8")->image;
+    cv::Mat img_uint8;
+    cvtColor(img_rgb8, img_uint8, cv::COLOR_RGB2GRAY);
     image_u8_t im{img_uint8.cols, img_uint8.rows, img_uint8.cols, img_uint8.data};
 
     // detect tags
